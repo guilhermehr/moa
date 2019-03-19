@@ -125,10 +125,6 @@ public class ALLimitedInstances extends AbstractClassifier implements ALClassifi
             'y', "Number of limited instances presented to the classifier.",
             0, 0, Integer.MAX_VALUE);
     
-    public IntOption stepLimitedInstancesOption = new IntOption("stepLimitedInstances",
-            'w', "Step for the limited instances presented to the classifier",
-            0, 0, Integer.MAX_VALUE);
-    
     public Classifier classifier;
 
     public int lastLabelAcq = 0;
@@ -136,6 +132,8 @@ public class ALLimitedInstances extends AbstractClassifier implements ALClassifi
     public int costLabeling;
 
     public int iterationControl;
+    
+    private int botnetInstances;
 
     public double newThreshold;
 
@@ -197,12 +195,20 @@ public class ALLimitedInstances extends AbstractClassifier implements ALClassifi
         this.newThreshold = 1.0;
         this.accuracyBaseLearner = 0;
         this.lastLabelAcq = 0;
+        this.botnetInstances = 0;
     }
 
     @Override
     public void trainOnInstanceImpl(Instance inst) {
 
         this.iterationControl++;
+        
+        //Whether botnet instance and not reached number of limited instances do nothing
+        if(inst.classValue(12) == 1.0 && this.botnetInstances <= this.numLimitedInstancesOption.getValue()) {
+        	this.botnetInstances++;
+        	System.out.println("botnet: " + this.botnetInstances);
+        	return;
+        }
 
         double costNow;
 
