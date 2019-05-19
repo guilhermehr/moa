@@ -64,7 +64,7 @@ public class ALLimitedInstances extends AbstractClassifier implements ALClassifi
     /**
      * Current number of botnet instances checked
      */
-    private int botnetInstances;
+    private int countInstances;
     
     /**
      * Block the train on instances based on the numLimitedInstances for botnet
@@ -96,7 +96,7 @@ public class ALLimitedInstances extends AbstractClassifier implements ALClassifi
         /**
          * Reset number of current botnet instances checked to zero
          */
-        this.botnetInstances = 0;
+        this.countInstances = 0;
         
         /**
          * Reset the block of train on instances based on the numLimitedInstances for botnet
@@ -107,13 +107,12 @@ public class ALLimitedInstances extends AbstractClassifier implements ALClassifi
 	@Override
 	public void trainOnInstanceImpl(Instance inst) {
 		
-        //Whether botnet instance and has numLimitedInstances
-		if (!blockTrain && this.numLimitedInstancesOption.getValue() != 0 && inst.classValue() == 1.0) {
+        //Whether has numLimitedInstances
+		if (!blockTrain && this.numLimitedInstancesOption.getValue() != 0) {
 			
 			//not reached number of limited instances do nothing
-			if (this.botnetInstances < this.numLimitedInstancesOption.getValue()) {
-				this.botnetInstances++;
-				System.out.println("botnet: " + this.botnetInstances);
+			if (this.countInstances < this.numLimitedInstancesOption.getValue()) {
+				this.countInstances++;
 			} else {
 				blockTrain = true;
 			}
