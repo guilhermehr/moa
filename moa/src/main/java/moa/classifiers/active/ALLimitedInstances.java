@@ -57,17 +57,20 @@ public class ALLimitedInstances extends AbstractClassifier implements ALClassifi
             'y', "Number of limited instances presented to the classifier. Zero (0) no limit.",
             0, 0, Integer.MAX_VALUE);
     
+    public IntOption filterClassOption = new IntOption("filterClass", 'w', 
+    		"Filter specific class value. Value -1 for all classes.", -1, -1, Integer.MAX_VALUE);
+    
     public Classifier classifier;
 
     public BudgetManager budgetManager;
     
     /**
-     * Current number of botnet instances checked
+     * Current count of instances checked
      */
-    private int botnetInstances;
+    private int countInstances;
     
     /**
-     * Block the train on instances based on the numLimitedInstances for botnet
+     * Block the train on instances based on the numLimitedInstances
      */
     private boolean blockTrain = false;
     
@@ -96,7 +99,7 @@ public class ALLimitedInstances extends AbstractClassifier implements ALClassifi
         /**
          * Reset number of current botnet instances checked to zero
          */
-        this.botnetInstances = 0;
+        this.countInstances = 0;
         
         /**
          * Reset the block of train on instances based on the numLimitedInstances for botnet
@@ -108,11 +111,12 @@ public class ALLimitedInstances extends AbstractClassifier implements ALClassifi
 	public void trainOnInstanceImpl(Instance inst) {
 		
 		//Whether botnet instance and has numLimitedInstances
-		if (!blockTrain && this.numLimitedInstancesOption.getValue() != 0 && inst.classValue() == 1.0) {
+		if (!blockTrain && this.numLimitedInstancesOption.getValue() != 0 
+				&& (filterClassOption.getValue() < 0 || inst.classValue() == filterClassOption.getValue())) {
 			
 			//not reached number of limited instances do nothing
-			if (this.botnetInstances < this.numLimitedInstancesOption.getValue()) {
-				this.botnetInstances++;
+			if (this.countInstances < this.numLimitedInstancesOption.getValue()) {
+				this.countInstances++;
 			} else {
 				blockTrain = true;
 			}
@@ -139,8 +143,22 @@ public class ALLimitedInstances extends AbstractClassifier implements ALClassifi
 	}
 	
 	@Override
+	public void getDescription(StringBuilder out, int indent) {
+        //TODO
+        StringBuilder sb = new StringBuilder();
+        this.getModelDescription(sb, 0);
+        if(org.apache.commons.lang3.StringUtils.isNotEmpty(sb.toString())) {
+        	System.out.println("ALLimitedInst Hoeffding Tree Descrip: \n\n" + sb.toString() + "\n\n__________\n\n");
+        }
+	}
+	
+	@Override
 	public void setModelContext(InstancesHeader ih) {
 		super.setModelContext(ih);
 		classifier.setModelContext(ih);
+	}
+	
+	public Classifier getClassifier() {
+		return this.classifier.copy();
 	}
 }

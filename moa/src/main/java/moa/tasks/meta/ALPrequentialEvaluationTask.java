@@ -30,7 +30,11 @@ import com.github.javacliparser.FileOption;
 import com.github.javacliparser.IntOption;
 import com.yahoo.labs.samoa.instances.Instance;
 
+import moa.classifiers.Classifier;
 import moa.classifiers.active.ALClassifier;
+import moa.classifiers.active.ALLimitedInstances;
+import moa.classifiers.meta.OzaBagAdwin;
+import moa.classifiers.trees.HoeffdingTree;
 import moa.core.Example;
 import moa.core.Measurement;
 import moa.core.ObjectRepository;
@@ -266,6 +270,41 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
                         - evaluateStartTime);
         	}
         }
+        
+        //TODO
+        /*System.out.println("ALPrequentialEvaluationTask... ");
+        //System.out.println(learner);
+        
+        Classifier classifier = ((ALLimitedInstances) learner).getClassifier();
+        
+        if(classifier instanceof OzaBagAdwin) {
+            OzaBagAdwin oza = (OzaBagAdwin) (classifier);
+
+            System.out.println("Ozabagadwin: ");
+            System.out.println(oza);
+            
+            int i = 0;
+            
+            for(Classifier c : oza.getSubClassifiers()) {
+            	
+            	HoeffdingTree ht = (HoeffdingTree) c;
+            	
+            	System.out.println("Oza Hoeffding Tree " + i++ + ":");
+            	System.out.println();
+            	System.out.println(ht);
+            	
+            }
+            
+        } else if (classifier instanceof HoeffdingTree) {
+        	
+        	HoeffdingTree ht = (HoeffdingTree) (classifier);
+        	
+            System.out.println("HoeffdingTree: ");
+            System.out.println(ht);
+        }
+        */
+
+        
         
         if (immediateResultStream != null) {
             immediateResultStream.close();
