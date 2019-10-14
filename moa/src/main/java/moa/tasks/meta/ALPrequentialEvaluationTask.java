@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.javacliparser.FileOption;
+import com.github.javacliparser.FlagOption;
 import com.github.javacliparser.IntOption;
 import com.yahoo.labs.samoa.instances.Instance;
 
@@ -95,6 +96,8 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
 	
 	public FileOption dumpFileOption = new FileOption("dumpFile", 'd',
             "File to append intermediate csv results to.", null, "csv", true);
+	
+	public FlagOption printTreeOption = new FlagOption("printTree", 'a', "Option to print tree.");
 	
 	
 	/**
@@ -179,6 +182,10 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
         	// predict class for instance
         	double[] prediction = learner.getVotesForInstance(testInst);
         	evaluator.addResult(testInst, prediction);
+        	
+        	if(instancesProcessed+2 == 1299552) {
+        		System.out.println("");
+        	}
         	
         	// train on instance
         	learner.trainOnInstance(trainInst);
@@ -272,38 +279,38 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
         }
         
         //TODO
-        /*System.out.println("ALPrequentialEvaluationTask... ");
-        //System.out.println(learner);
-        
-        Classifier classifier = ((ALLimitedInstances) learner).getClassifier();
-        
-        if(classifier instanceof OzaBagAdwin) {
-            OzaBagAdwin oza = (OzaBagAdwin) (classifier);
+        if(this.printTreeOption.isSet()) {
+            System.out.println("ALPrequentialEvaluationTask... ");
+            //System.out.println(learner);
+            
+            Classifier classifier = ((ALLimitedInstances) learner).getClassifier();
+            
+            if(classifier instanceof OzaBagAdwin) {
+                OzaBagAdwin oza = (OzaBagAdwin) (classifier);
 
-            System.out.println("Ozabagadwin: ");
-            System.out.println(oza);
-            
-            int i = 0;
-            
-            for(Classifier c : oza.getSubClassifiers()) {
+                System.out.println("Ozabagadwin: ");
+                System.out.println(oza);
+                
+                int i = 0;
+                
+                for(Classifier c : oza.getSubClassifiers()) {
+                	
+                	HoeffdingTree ht = (HoeffdingTree) c;
+                	
+                	System.out.println("Oza Hoeffding Tree " + i++ + ":");
+                	System.out.println();
+                	System.out.println(ht);
+                	
+                }
+                
+            } else if (classifier instanceof HoeffdingTree) {
             	
-            	HoeffdingTree ht = (HoeffdingTree) c;
+            	HoeffdingTree ht = (HoeffdingTree) (classifier);
             	
-            	System.out.println("Oza Hoeffding Tree " + i++ + ":");
-            	System.out.println();
-            	System.out.println(ht);
-            	
+                System.out.println("HoeffdingTree: ");
+                System.out.println(ht);
             }
-            
-        } else if (classifier instanceof HoeffdingTree) {
-        	
-        	HoeffdingTree ht = (HoeffdingTree) (classifier);
-        	
-            System.out.println("HoeffdingTree: ");
-            System.out.println(ht);
-        }
-        */
-
+        }    
         
         
         if (immediateResultStream != null) {
