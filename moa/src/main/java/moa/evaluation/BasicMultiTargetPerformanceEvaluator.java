@@ -113,4 +113,10 @@ public class BasicMultiTargetPerformanceEvaluator extends AbstractMOAObject
 		
 	}
 
+	@Override
+	public ConfusionMatrix addResult(Example<Instance> example, double[] classVotes, ConfusionMatrix cm) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

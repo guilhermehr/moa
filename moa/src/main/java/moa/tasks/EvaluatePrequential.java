@@ -32,6 +32,7 @@ import moa.core.ObjectRepository;
 import moa.core.TimingUtils;
 import moa.evaluation.WindowClassificationPerformanceEvaluator;
 import moa.evaluation.preview.LearningCurve;
+import moa.evaluation.ConfusionMatrix;
 import moa.evaluation.EWMAClassificationPerformanceEvaluator;
 import moa.evaluation.FadingFactorClassificationPerformanceEvaluator;
 import moa.evaluation.LearningEvaluation;
@@ -119,7 +120,28 @@ public class EvaluatePrequential extends ClassificationMainTask {
         LearningPerformanceEvaluator evaluator = (LearningPerformanceEvaluator) getPreparedClassOption(this.evaluatorOption);
         LearningCurve learningCurve = new LearningCurve(
                 "learning evaluation instances");
+        
+        //Confusion Matrix
+        double colunaATotal = 0;
+        double colunaBTotal = 0;
+        double linhaATotal = 0;
+        double linhaBTotal = 0;
+        
+        double linhaA = 0;
+        double linhaB = 0;
+        double colunaA = 0;
+        double colunaB = 0;
+        
+        ConfusionMatrix cm = new ConfusionMatrix();
+        
+        cm.increaseValue("0", "0");
+        cm.increaseValue("0", "1");
+        cm.increaseValue("1", "1");
+        cm.increaseValue("1", "0");
+        
+        boolean first = true;
 
+        
         //New for prequential methods
         if (evaluator instanceof WindowClassificationPerformanceEvaluator) {
             //((WindowClassificationPerformanceEvaluator) evaluator).setWindowWidth(widthOption.getValue());
@@ -204,7 +226,15 @@ public class EvaluatePrequential extends ClassificationMainTask {
             }
 
             //evaluator.addClassificationAttempt(trueClass, prediction, testInst.weight());
-            evaluator.addResult(testInst, prediction);
+            cm = evaluator.addResult(testInst, prediction, cm);
+            
+            linhaA = cm.getRowCM("0", "0") - linhaATotal;
+            linhaB = cm.getRowCM("0", "1") - linhaBTotal;
+            colunaA = cm.getRowCM("1", "1") - colunaATotal;
+            colunaB = cm.getRowCM("1", "0") - colunaBTotal;
+            
+            
+            
             learner.trainOnInstance(trainInst);
             instancesProcessed++;
             if (instancesProcessed % this.sampleFrequencyOption.getValue() == 0
@@ -228,9 +258,39 @@ public class EvaluatePrequential extends ClassificationMainTask {
                             time),
                             new Measurement(
                             "model cost (RAM-Hours)",
-                            RAMHours)
+                            RAMHours),
+                            
+                            new Measurement("Total Geral", cm.getTotalSum()),
+                            new Measurement("Linha N-N", (first ? linhaA - 1 : linhaA)),
+                            new Measurement("Linha A-N", (first ? linhaB - 1 : linhaB)),
+                            new Measurement("Coluna N-A", (first ? colunaA - 1 : colunaA)),
+                            new Measurement("Coluna A-A", (first ? colunaB - 1 : colunaB))
                         },
                         evaluator, learner));
+                
+                first = false;
+                
+				//colunaA = 0;
+				//colunaB = 0;
+				linhaATotal = cm.getRowCM("0","0");
+				linhaBTotal = cm.getRowCM("0", "1");
+				colunaATotal = cm.getRowCM("1","1");
+				colunaBTotal = cm.getRowCM("1","0");
+
+				//True, previsted
+				linhaA = cm.getRowCM("0","0") - linhaATotal; //TP 
+				linhaB = cm.getRowCM("0", "1") - linhaBTotal; //FN
+				colunaA = cm.getRowCM("1","1") - colunaATotal; //TN->TP
+				colunaB = cm.getRowCM("1","0") - colunaBTotal; //FP->FN
+				//             ataque / normal
+				//ataque       TP     /  FN 
+				//normal
+				//
+				
+				linhaA = 0;
+				linhaB = 0;
+				colunaA = 0;
+				colunaB = 0;                
 
                 if (immediateResultStream != null) {
                     if (firstDump) {

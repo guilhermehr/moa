@@ -144,4 +144,10 @@ public class BasicRegressionPerformanceEvaluator extends AbstractMOAObject
     	if(prediction!=null)
     		addResult(example,prediction.getVotes(0));
     }
+
+	@Override
+	public ConfusionMatrix addResult(Example<Instance> example, double[] classVotes, ConfusionMatrix cm) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

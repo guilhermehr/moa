@@ -508,4 +508,10 @@ public class WindowAUCImbalancedPerformanceEvaluator extends
 	public void addResult(Example<Instance> arg0, Prediction arg1) {
 		throw new RuntimeException("Designed for scoring classifiers");
 	}
+
+	@Override
+	public ConfusionMatrix addResult(Example<Instance> example, double[] classVotes, ConfusionMatrix cm) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

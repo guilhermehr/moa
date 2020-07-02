@@ -172,4 +172,10 @@ public class WindowRegressionPerformanceEvaluator extends AbstractOptionHandler
 		addResult(testInst, votes);
 		
 	}
+
+	@Override
+	public ConfusionMatrix addResult(Example<Instance> example, double[] classVotes, ConfusionMatrix cm) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

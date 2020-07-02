@@ -52,6 +52,7 @@ public interface LearningPerformanceEvaluator<E extends Example> extends MOAObje
      */
 	public void addResult(E testInst, Prediction prediction);
     public void addResult(E example, double[] classVotes);
+	public ConfusionMatrix addResult(E example, double[] classVotes, ConfusionMatrix cm);
 
     /**
      * Gets the current measurements monitored by this evaluator.
@@ -59,5 +60,6 @@ public interface LearningPerformanceEvaluator<E extends Example> extends MOAObje
      * @return an array of measurements monitored by this evaluator
      */
 	public Measurement[] getPerformanceMeasurements();
+
 
 }

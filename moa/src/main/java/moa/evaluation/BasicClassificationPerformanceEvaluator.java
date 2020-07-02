@@ -328,4 +328,43 @@ public class BasicClassificationPerformanceEvaluator extends AbstractOptionHandl
     protected Estimator newEstimator() {
         return new BasicEstimator();
     }
+
+    @Override
+    //Aqui será feito o cálculo da matriz de confusão.
+    public ConfusionMatrix addResult(Example<Instance> example, double[] classVotes, ConfusionMatrix cm) {
+    	   	
+    	Instance inst = example.getData();
+        double weight = inst.weight();
+        if (inst.classIsMissing() == false) {
+            int trueClass = (int) inst.classValue();
+            int predictedClass = Utils.maxIndex(classVotes);
+            if (weight > 0.0) {
+                if (this.totalWeightObserved == 0) {
+                    reset(inst.dataset().numClasses());
+                }
+                this.totalWeightObserved += weight;
+                this.weightCorrect.add(predictedClass == trueClass ? weight : 0);
+                for (int i = 0; i < this.numClasses; i++) {
+                    this.rowKappa[i].add(predictedClass == i ? weight : 0);
+                    this.columnKappa[i].add(trueClass == i ? weight : 0);
+                    // for both precision and recall, NaN values are used to 'balance' the number
+                    // of instances seen across classes
+                    if (predictedClass == i) {
+                        precision[i].add(predictedClass == trueClass ? weight : 0.0);
+                    } else precision[i].add(Double.NaN);
+                    if (trueClass == i) {
+                        recall[i].add(predictedClass == trueClass ? weight : 0.0);
+                    } else recall[i].add(Double.NaN);
+                    
+                }
+            }
+            this.weightCorrectNoChangeClassifier.add(this.lastSeenClass == trueClass ? weight : 0);
+            this.weightMajorityClassifier.add(getMajorityClass() == trueClass ? weight : 0);
+            this.lastSeenClass = trueClass;
+
+            cm.increaseValue(String.valueOf(trueClass), String.valueOf(predictedClass));
+        }
+        return cm;
+    }
+    
 }
