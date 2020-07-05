@@ -24,7 +24,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.github.javacliparser.FileOption;
 import com.github.javacliparser.FlagOption;
@@ -85,7 +87,7 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
 	public IntOption instanceLimitOption = new IntOption("instanceLimit", 'i',
             "Maximum number of instances to test/train on  (-1 = no limit).",
             100000000, -1, Integer.MAX_VALUE);
-	
+
 	public IntOption timeLimitOption = new IntOption("timeLimit", 't',
             "Maximum number of seconds to test/train for (-1 = no limit).", -1,
             -1, Integer.MAX_VALUE);
@@ -99,6 +101,11 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
             "File to append intermediate csv results to.", null, "csv", true);
 	
 	public FlagOption printTreeOption = new FlagOption("printTree", 'a', "Option to print tree.");
+	
+
+	public IntOption classNumberOption = new IntOption("classNumber", 'c',
+            "Number of classes to test/train on  (2 = default).",
+            2, 2, Integer.MAX_VALUE);	
 	
 	
 	/**
@@ -144,23 +151,36 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
         		"learning evaluation instances");
         
         
+        int n = classNumberOption.getValue();
+        
         //Confusion Matrix
-        double colunaATotal = 0;
-        double colunaBTotal = 0;
-        double linhaATotal = 0;
-        double linhaBTotal = 0;
-        
-        double linhaA = 0;
-        double linhaB = 0;
-        double colunaA = 0;
-        double colunaB = 0;
-        
         ConfusionMatrix cm = new ConfusionMatrix();
         
-        cm.increaseValue("0", "0");
-        cm.increaseValue("0", "1");
-        cm.increaseValue("1", "1");
-        cm.increaseValue("1", "0");
+//        cm.increaseValue("0", "0");
+//        cm.increaseValue("0", "1");
+//        cm.increaseValue("1", "1");
+//        cm.increaseValue("1", "0");
+
+        for(int i = 0; i < n; i++) {
+        	for(int j = 0; j < n; j++) {
+        		cm.increaseValue(String.valueOf(i), String.valueOf(j));
+        	}
+        }
+        
+        double[][] matrixTotal = new double[n][n];
+        double[][] matrixTemp = new double[n][n];
+                
+        
+//        double colunaATotal = 0;
+//        double colunaBTotal = 0;
+//        double linhaATotal = 0;
+//        double linhaBTotal = 0;
+//        
+//        double linhaA = 0;
+//        double linhaB = 0;
+//        double colunaA = 0;
+//        double colunaB = 0;
+        
         
         boolean first = true;
         
@@ -220,11 +240,12 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
         	
             cm = evaluator.addResult(testInst, prediction, cm);
             
-            linhaA = cm.getRowCM("0", "0") - linhaATotal;
-            linhaB = cm.getRowCM("0", "1") - linhaBTotal;
-            colunaA = cm.getRowCM("1", "1") - colunaATotal;
-            colunaB = cm.getRowCM("1", "0") - colunaBTotal;
-        	
+            for(int i = 0; i < n; i++) {
+            	for(int j = 0; j < n; j++) {
+            		matrixTemp[i][j] = cm.getRowCM(String.valueOf(i), String.valueOf(j)) - matrixTotal[i][j];
+            	}
+            }
+                        
         	
         	// update learning curve
         	if (instancesProcessed % this.sampleFrequencyOption.getValue() == 0
@@ -242,53 +263,38 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
                 RAMHours += RAMHoursIncrement;
                 lastEvaluateStartTime = evaluateTime;
         		
-        		learningCurve.insertEntry(new LearningEvaluation(
-        				new Measurement[]{
-        						new Measurement(
-        								"learning evaluation instances",
-        								instancesProcessed),
-        						new Measurement(
-        	                            "evaluation time ("
-        	                            + (preciseCPUTiming ? "cpu "
-        	                            : "") + "seconds)",
-        	                            time),
-	                            new Measurement(
-        	                            "model cost (RAM-Hours)",
-        	                            RAMHours),
-	                            
-	                            new Measurement("Total Geral", cm.getTotalSum()),
-	                            new Measurement("Linha N-N", (first ? linhaA - 1 : linhaA)),
-	                            new Measurement("Linha A-N", (first ? linhaB - 1 : linhaB)),
-	                            new Measurement("Coluna N-A", (first ? colunaA - 1 : colunaA)),
-	                            new Measurement("Coluna A-A", (first ? colunaB - 1 : colunaB))
-                            
-        				},
-        				evaluator, learner));
-        		
-                first = false;
                 
-				//colunaA = 0;
-				//colunaB = 0;
-				linhaATotal = cm.getRowCM("0","0");
-				linhaBTotal = cm.getRowCM("0", "1");
-				colunaATotal = cm.getRowCM("1","1");
-				colunaBTotal = cm.getRowCM("1","0");
+                List<Measurement> measurements = new ArrayList<Measurement>();
+                
+                measurements.add(new Measurement(
+						"learning evaluation instances",
+						instancesProcessed));
+                
+                measurements.add(new Measurement(
+                        "evaluation time ("
+                        + (preciseCPUTiming ? "cpu "
+                        : "") + "seconds)",
+                        time));
+                
+                measurements.add(new Measurement(
+                        "model cost (RAM-Hours)",
+                        RAMHours));
+                
+                measurements.add(new Measurement("Total Geral", cm.getTotalSum()));
+                
+                for(int i = 0; i < n; i++) {
+                	for(int j = 0; j < n; j++) {
+                		measurements.add(new Measurement(String.format("%dx%d", i, j), (first ? matrixTemp[i][j] - 1 : matrixTemp[i][j])));
+                		matrixTotal[i][j] = cm.getRowCM(String.valueOf(i), String.valueOf(j));
+                		matrixTemp[i][j] = 0;
+                	}
+                }
 
-				//True, previsted
-				linhaA = cm.getRowCM("0","0") - linhaATotal; //TP 
-				linhaB = cm.getRowCM("0", "1") - linhaBTotal; //FN
-				colunaA = cm.getRowCM("1","1") - colunaATotal; //TN->TP
-				colunaB = cm.getRowCM("1","0") - colunaBTotal; //FP->FN
-				//             ataque / normal
-				//ataque       TP     /  FN 
-				//normal
-				//
-				
-				linhaA = 0;
-				linhaB = 0;
-				colunaA = 0;
-				colunaB = 0;            		
-        		
+        		learningCurve.insertEntry(new LearningEvaluation(measurements.toArray(new Measurement[measurements.size()]),
+        				evaluator, learner));                
+                
+                first = false;
+                        		
         		if (immediateResultStream != null) {
                     if (firstDump) {
                         immediateResultStream.println(learningCurve.headerToString());
