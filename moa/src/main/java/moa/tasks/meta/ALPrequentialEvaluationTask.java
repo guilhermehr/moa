@@ -281,6 +281,34 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
                         RAMHours));
                 
                 measurements.add(new Measurement("Total Geral", cm.getTotalSum()));
+
+                double tp = 0, tn = 0, fp = 0, fn = 0;
+                int classIndex = 0;
+                
+                tp = (first ? matrixTemp[classIndex][classIndex] - 1 : matrixTemp[classIndex][classIndex]);
+                
+                for(int l = 0; l < n; l++) {
+                	fp += (first ? matrixTemp[l][classIndex] - 1 : matrixTemp[l][classIndex]);
+                	fn += (first ? matrixTemp[classIndex][l] - 1 : matrixTemp[classIndex][l]);
+                }
+                
+                fp -= tp;
+                fn -= tp;
+                
+        		measurements.add(new Measurement("TP", tp));
+        		measurements.add(new Measurement("FP", fp));
+        		measurements.add(new Measurement("FN", fn));
+                
+                for(int l = 0; l < n; l++) {
+                	for(int k = 0; k < n; k++) {
+                		tn += (first ? matrixTemp[l][k] - 1 : matrixTemp[l][k]);
+                	}
+                }
+                
+                tn = tn - tp -fp - fn;
+
+        		measurements.add(new Measurement("TN", tn));
+                
                 
                 for(int i = 0; i < n; i++) {
                 	for(int j = 0; j < n; j++) {
