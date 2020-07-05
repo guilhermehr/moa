@@ -156,11 +156,6 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
         //Confusion Matrix
         ConfusionMatrix cm = new ConfusionMatrix();
         
-//        cm.increaseValue("0", "0");
-//        cm.increaseValue("0", "1");
-//        cm.increaseValue("1", "1");
-//        cm.increaseValue("1", "0");
-
         for(int i = 0; i < n; i++) {
         	for(int j = 0; j < n; j++) {
         		cm.increaseValue(String.valueOf(i), String.valueOf(j));
@@ -169,19 +164,7 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
         
         double[][] matrixTotal = new double[n][n];
         double[][] matrixTemp = new double[n][n];
-                
-        
-//        double colunaATotal = 0;
-//        double colunaBTotal = 0;
-//        double linhaATotal = 0;
-//        double linhaBTotal = 0;
-//        
-//        double linhaA = 0;
-//        double linhaB = 0;
-//        double colunaA = 0;
-//        double colunaB = 0;
-        
-        
+                        
         boolean first = true;
         
 		// perform training and testing
@@ -309,6 +292,7 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
 
         		measurements.add(new Measurement("TN", tn));
                 
+                measurements.add(new Measurement("Total Geral", tp+fp+fn+tn));
                 
                 for(int i = 0; i < n; i++) {
                 	for(int j = 0; j < n; j++) {
