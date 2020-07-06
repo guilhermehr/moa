@@ -107,6 +107,10 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
             "Number of classes to test/train on  (2 = default).",
             2, 2, Integer.MAX_VALUE);	
 	
+	public IntOption classIndexOption = new IntOption("classIndex", 'x',
+            "Class index  (0 = default).",
+            0, 0, Integer.MAX_VALUE);	
+	
 	
 	/**
 	 * Constructor which sets the color coding to black.
@@ -206,7 +210,8 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
         	
         	// predict class for instance
         	double[] prediction = learner.getVotesForInstance(testInst);
-        	evaluator.addResult(testInst, prediction);
+        	
+        	cm = evaluator.addResult(testInst, prediction, cm);
         	
         	if(instancesProcessed+2 == 1299552) {
         		System.out.println("");
@@ -221,7 +226,7 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
         	
         	instancesProcessed++;
         	
-            cm = evaluator.addResult(testInst, prediction, cm);
+            
             
             for(int i = 0; i < n; i++) {
             	for(int j = 0; j < n; j++) {
@@ -263,10 +268,8 @@ public class ALPrequentialEvaluationTask extends ALMainTask {
                         "model cost (RAM-Hours)",
                         RAMHours));
                 
-                measurements.add(new Measurement("Total Geral", cm.getTotalSum()));
-
                 double tp = 0, tn = 0, fp = 0, fn = 0;
-                int classIndex = 0;
+                int classIndex = classIndexOption.getValue();
                 
                 tp = (first ? matrixTemp[classIndex][classIndex] - 1 : matrixTemp[classIndex][classIndex]);
                 
